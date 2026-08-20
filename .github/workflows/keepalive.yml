@@ -15,5 +15,7 @@ jobs:
               code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 "https://elabs-jrch.onrender.com$u")
               echo "$(date -u +%H:%M:%S) iter=$i $u -> $code"
             done
+            reminder=$(curl -sS -X POST --max-time 90 -H "X-ELABS-Cron: ${{ secrets.ELABS_CRON_KEY }}" "https://elabs-jrch.onrender.com/api/reminders/daily")
+            echo "$(date -u +%H:%M:%S) przypomnienia -> $reminder"
             if [ "$i" -lt 6 ]; then sleep 600; fi
           done
