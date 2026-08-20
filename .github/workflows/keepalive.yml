@@ -6,10 +6,14 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
-      - name: Ping ELABS (budzi Render, nie usypia)
+      - name: Ping ELABS w petli co 10 min przez ~55 min (zamyka luke dlawienia crona GitHub)
         run: |
-          for u in /sw.js /; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 "https://elabs-jrch.onrender.com$u")
-            echo "$u -> $code"
+          for i in $(seq 1 6); do
+            for u in /sw.js /; do
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 "https://elabs-jrch.onrender.com$u")
+              echo "$(date -u +%H:%M:%S) iter=$i $u -> $code"
+            done
+            if [ "$i" -lt 6 ]; then sleep 600; fi
           done
