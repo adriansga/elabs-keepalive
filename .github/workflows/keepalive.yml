@@ -7,15 +7,20 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      ELABS_CRON_KEY: ${{ secrets.ELABS_CRON_KEY }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+      MAIL_FROM_NAME: ${{ secrets.MAIL_FROM_NAME }}
     steps:
-      - name: Ping ELABS w petli co 10 min przez ~55 min (zamyka luke dlawienia crona GitHub)
+      - uses: actions/checkout@v4
+      - name: Ping ELABS i obsluz przypomnienia co 10 min przez ~55 min
         run: |
           for i in $(seq 1 6); do
             for u in /sw.js /; do
               code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 "https://elabs-jrch.onrender.com$u")
               echo "$(date -u +%H:%M:%S) iter=$i $u -> $code"
             done
-            reminder=$(curl -sS -X POST --max-time 90 -H "X-ELABS-Cron: ${{ secrets.ELABS_CRON_KEY }}" "https://elabs-jrch.onrender.com/api/reminders/daily")
-            echo "$(date -u +%H:%M:%S) przypomnienia -> $reminder"
+            python send_reminders.py
             if [ "$i" -lt 6 ]; then sleep 600; fi
           done
