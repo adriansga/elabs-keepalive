@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Worker ELABS: SMS E2E z potwierdzeniem operatora, retry i e-mail fallback.
+"""Worker ELABS: SMS E2E z potwierdzeniem odbioru, retry i e-mail fallback.
 
-Zasada bezpieczeństwa: rekord jest zamykany dopiero po stanie Sent/Delivered
-z telefonu albo po zaakceptowaniu awaryjnego e-maila przez SMTP.
+Zasada bezpieczeństwa: rekord jest zamykany dopiero po stanie Delivered
+z telefonu odbiorcy albo po zaakceptowaniu awaryjnego e-maila przez SMTP.
 """
 import base64
 import hashlib
@@ -27,9 +27,9 @@ SMSGATE_PASS = os.environ.get("SMSGATE_PASSWORD", "")
 SMSGATE_PHRASE = os.environ.get("SMSGATE_PASSPHRASE", "")
 SMSGATE_SIM = os.environ.get("SMSGATE_SIM_NUMBER", "").strip()
 SMSGATE_BASE = "https://api.sms-gate.app/3rdparty/v1"
-SUCCESS_STATES = {"Sent", "Delivered"}
+SUCCESS_STATES = {"Delivered"}
 FAILED_STATES = {"Failed", "Cancelled", "Canceled"}
-WAITING_STATES = {"Pending", "Processed", "Cancelling"}
+WAITING_STATES = {"Pending", "Processed", "Sent", "Cancelling"}
 
 
 class SmsAwaiting(RuntimeError):
@@ -152,7 +152,7 @@ def _poll_message(message_id, wait_seconds=120):
 
 
 def send_sms_confirmed(item):
-    """Idempotentnie wysyła SMS; sukces dopiero po Sent/Delivered z telefonu."""
+    """Idempotentnie wysyła SMS; sukces dopiero po Delivered od telefonu odbiorcy."""
     attempt = max(1, int(item.get("attempt") or 1))
 
     # Po awarii między wysłaniem a zapisem najpierw odzyskujemy wcześniejszy sukces.
