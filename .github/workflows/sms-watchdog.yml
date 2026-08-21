@@ -1,0 +1,19 @@
+name: ELABS SMS watchdog
+on:
+  schedule:
+    - cron: '23,53 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      ELABS_CRON_KEY: ${{ secrets.ELABS_CRON_KEY }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sprawdz heartbeat i wyslij alarm tylko przy zmianie stanu
+        run: python watchdog.py
